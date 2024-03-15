@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+<script async src="https://analytics.umami.is/script.js" data-website-id="360e23fb-dc51-4801-8584-453e13c2442c"></script>
+  <meta content="text/html; charset=UTF-8" name="Content-Type" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width" />
+
+  <meta property="og:site_name" content="Find vs Filter in Javascript" />
+  <meta property="og:locale" content="en_US" />
+
+  <meta property="og:title" content="Find vs Filter in Javascript" />
+  <meta property="og:type" content="article" />
+
+    <meta name="description" content="Portfolio and writing of Software Developer Rory Flint" />
+  <meta property="og:description" content="Portfolio and writing of Software Developer Rory Flint" />
+
+
+
+<meta property="og:image" content="/assets/192.png" />
+<meta name="author" content="Rory Flint" />
+
+
+  <meta property="og:url" content="https://rory.codes/find-vs-filter/"  />  
+  <link rel="canonical" href="index.html"  />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:image" content="https://rory.codes/assets/192.png" />
+  <meta name="twitter:site" content="@mrroryflint" />
+  <meta name="twitter:creator" content="@mrroryflint" />
+
+  <link rel="icon" href="../assets/32.png" sizes="32x32">
+  <link rel="icon" href="../assets/192.png"sizes="192x192"> 
+
+  <link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />  
+  <title>Find vs Filter in Javascript - Rory Flint</title>  
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body>
+    
+<a class="muted small" href="../index.html">← rory flint</a>
+<h1>Find vs Filter in Javascript</h1>
+
+<p class="muted small">First published on Mar 20, 2020</p>
+ 
+<p>How many built in Array methods can you name? Off the top of my head I came up with: <em>map, filter, reduce, find, pop, push, shift, unshift, forEach, concat and includes.</em> At time of writing, there are at least <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array#Instance_methods">32</a>, I named less than a third!</p>
+<p>The beauty of programming is that we are problem solving. We take our tool kit, which may contain less than a third of the tools available, and use what we have at hand to get to a solution. Maybe afterwards we go back and refine things but ultimately we will sacrifice efficiency and elegance in exchange for workability.</p>
+<h2>Filter( )</h2>
+<p>Up until recently I have been using filter( ), a lot. Perhaps you have too. My most common use case would be something like the following:</p>
+<pre class="language-js"><code class="language-js"><span class="token comment">// Some data stored in state most likely from an API.</span><br><span class="token keyword">const</span> myData <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">{</span><span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token number">1</span><span class="token punctuation">,</span> content<span class="token operator">=</span><span class="token string">"abc"</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token number">2</span><span class="token punctuation">,</span> content<span class="token operator">=</span><span class="token string">"def"</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token number">3</span><span class="token punctuation">,</span> content<span class="token operator">=</span><span class="token string">"ghi"</span><span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br><br><span class="token comment">// A particular piece of data is required (eg. A user chooses an item)</span><br><span class="token keyword">const</span> selectedDataID <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span><br><br><span class="token comment">// Using the ID of the selected data, we filter the array and grab the item that matches.</span><br><span class="token keyword">const</span> displayData <span class="token operator">=</span> myData<span class="token punctuation">.</span><span class="token function">filter</span><span class="token punctuation">(</span><span class="token parameter">item</span> <span class="token operator">=></span> <span class="token punctuation">{</span><br>  <span class="token keyword">return</span> item<span class="token punctuation">.</span>id <span class="token operator">===</span> selectedDataID<span class="token punctuation">;</span><br><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br><br><span class="token comment">// Result ==> displayData = [{id: 2, content="def"}]</span><br></code></pre>
+<p>In short, we have an array which is filled with data, probably being pulled from an API, that is rendered to the screen or is sitting behind the scenes waiting to be used. A user might click an item to enlarge, to open a new view or to save it to their account, so we pass the ID of the selected item to our filter method that then loops through the data, finds the relevant matching item and eliminates the rest, allowing us to work precisely with the item selected. Perfect. Or so I thought.</p>
+<h3>The Problem</h3>
+<p>Well, problem isn't fair. Filter is really, really good at filtering. It's in the name. If we have data stored in an array and pass it a condition, it will check every single item to ensure it doesn't miss anything, and return all those that meet our criteria. This explains why the result returned is an array:</p>
+<pre class="language-js"><code class="language-js"><span class="token keyword">const</span> numbers <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">12</span><span class="token punctuation">,</span> <span class="token number">43</span><span class="token punctuation">,</span> <span class="token number">52</span><span class="token punctuation">,</span> <span class="token number">91</span><span class="token punctuation">,</span> <span class="token number">42</span><span class="token punctuation">,</span> <span class="token number">101</span><span class="token punctuation">,</span> <span class="token number">98</span><span class="token punctuation">,</span> <span class="token number">11</span><span class="token punctuation">]</span><br><br><span class="token comment">// A simple filter to only return even numbers</span><br><span class="token keyword">const</span> evenNumbersOnly <span class="token operator">=</span> numbers<span class="token punctuation">.</span><span class="token function">filter</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">num</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><br>  <span class="token keyword">return</span> num <span class="token operator">%</span> <span class="token number">2</span> <span class="token operator">===</span> <span class="token number">0</span><br><span class="token punctuation">}</span><span class="token punctuation">)</span><br><span class="token comment">// evenNumbersOnly = [ 12, 52, 42, 98 ]</span></code></pre>
+<p>It runs something like...the number 12, our first item, is passed into the conditional. Is it even? Yes! So we keep hold of it. Then 43...is that even? Nope. Rejected. Move on. This continues until the very end. Filter checks every single item because there is the potential than every item could match the condition.</p>
+<p>Can you see an issue with the original example?</p>
+<p>If are using unique IDs, our filter method will find a match, and then keep looking. It doesn't know our value is unique! Imagine our data set is large, perhaps several hundred or even thousand items long. It's incredibly inefficient to find a piece of data early in the search and then continue to loop through many, many more items knowing our condition has already been met.</p>
+<h2>Find( )</h2>
+<p>Here we have one of those methods you may have heard of, you may have even used after finding a reference on Stack Overflow, but ultimately ignored. It is possible to achieve very similar results with our current tools and so learning yet another method may have seemed pointless.</p>
+<p>Straight from the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find">documentation</a>, &quot;The find( ) method returns the value of the first element in the provided array that satisfies the provided testing function.&quot;</p>
+<pre class="language-js"><code class="language-js"><span class="token keyword">const</span> myData <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">{</span><span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token number">1</span><span class="token punctuation">,</span> content<span class="token operator">=</span><span class="token string">"abc"</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token number">2</span><span class="token punctuation">,</span> content<span class="token operator">=</span><span class="token string">"def"</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token number">3</span><span class="token punctuation">,</span> content<span class="token operator">=</span><span class="token string">"ghi"</span><span class="token punctuation">}</span><span class="token punctuation">]</span><span class="token punctuation">;</span><br><br><span class="token comment">// The loop will immediate exit once the condition is satisfied.</span><br><span class="token keyword">const</span> displayData <span class="token operator">=</span> myData<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span><span class="token parameter">item</span> <span class="token operator">=></span> <span class="token punctuation">{</span><br>  <span class="token keyword">return</span> item<span class="token punctuation">.</span>id <span class="token operator">===</span> <span class="token number">2</span><span class="token punctuation">;</span><br><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span><br><span class="token comment">// displayData = {id: 2, content="def"}</span><br></code></pre>
+<p>We are returned the exact value, not in an array and without going through any unnecessary iterations through further data. The loop will start at the beginning and methodically work through testing each item in the array against our condition and as soon as an item meets the criteria, it is saved to the variable and the loop exits. No further items in the array are tested.</p>
+<p>Undoubtedly in many cases with limited amounts of data, the speed difference is completely negligible. But as we progress onto larger data sets, more complicated projects and just generally cleaner code, considering things like performance and redundancy become more and more important.</p>
+<p>So, that's it! Consider using <em>find( )</em> rather than <em>filter( )</em> next time you need to locate just a single piece of data inside an array. It avoids repetition and the implementation is almost identical. As an added bonus, we can use <em>findIndex( )</em> in the exact same way and have the index returned rather than the whole item.</p>
+
+<footer>
+  <p class="muted small">
+    © 2024 | <a class="muted" href="https://twitter.com/mrroryflint">@MrRoryFlint</a>
+  </p>
+</footer>
+
+
+</body>
+</html>
